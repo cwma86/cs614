@@ -16,7 +16,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-src_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+src_path = os.path.dirname(os.path.abspath(__file__))
 
 def input():
     parser = argparse.ArgumentParser(
@@ -59,7 +59,7 @@ def input():
     return args
 
 def data_base_connect():
-    db_path = os.path.join(src_path, 'reccomender_system', 'favorites.db')
+    db_path = os.path.join(src_path, 'favorites.db')
     if not os.path.isfile(db_path):
         logging.warning(f"invalid database path {db_path}")
 
@@ -124,7 +124,7 @@ def get_user_favorites(username):
     for entry in response:
         # Create list of favorited stocks from the database querry response
         favorited_stocks.append(entry[3]) 
-    logging.info(f"truth_matrix {favorited_stocks}")
+    logging.debug(f"truth_matrix {favorited_stocks}")
 
     return favorited_stocks
 
@@ -161,8 +161,7 @@ def train_new_matrices(
         stock_weights.to_csv(stock_weights_file_path)
         return user_weights, stock_weights
 
-def reccomend_stocks(username, user_weight_path, stock_weight_path):
-    print(user_weight_path)
+def recommend_stocks(username, user_weight_path, stock_weight_path):
     user_weights = pd.read_csv(user_weight_path, index_col=0)
     stock_weights = pd.read_csv(stock_weight_path, index_col=0)
 
@@ -170,16 +169,14 @@ def reccomend_stocks(username, user_weight_path, stock_weight_path):
     predict = np.dot(user_matrix_np, stock_weights.to_numpy()) # multiple our user weights against stock weights
     predict = pd.DataFrame(predict, index=[username], columns=stock_weights.columns)
     highest_predictions = predict.loc[username,:].nlargest(50)
-    print(f"{username} \n {highest_predictions}")
     user_favorites = get_user_favorites(username)
-    reccomended_stocks = []
+    recommended_stocks = []
     i = 0
-    while len(reccomended_stocks) < 12:
-        print(highest_predictions.index[i])
+    while len(recommended_stocks) < 12:
         if not highest_predictions.index[i] in user_favorites:
-            reccomended_stocks.append(highest_predictions.index[i])
+            recommended_stocks.append(highest_predictions.index[i])
         i += 1
-    return reccomended_stocks
+    return recommended_stocks
 
 def main(args):
     if args.train:
@@ -199,8 +196,8 @@ def main(args):
 
     # predict single user by performing a dot product with their row data and the stock weight matrix
     user = args.user
-    reccomended_stocks = reccomend_stocks(user, args.user_weights, args.stock_weights)
-    print(f"reccomended stocks for {user} \n{reccomended_stocks}")
+    recommended_stocks = recommend_stocks(user, args.user_weights, args.stock_weights)
+    print(f"recommended stocks for {user} \n{recommended_stocks}")
 
 if __name__ == '__main__':
     args = input()
