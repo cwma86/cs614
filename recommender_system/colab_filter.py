@@ -124,7 +124,6 @@ def get_user_favorites(username):
     for entry in response:
         # Create list of favorited stocks from the database querry response
         favorited_stocks.append(entry[3]) 
-    logging.info(f"truth_matrix {favorited_stocks}")
 
     return favorited_stocks
 
@@ -142,7 +141,6 @@ def train_new_matrices(
         # pull all user favorites from the site data base
         users = get_users()
         stocks = get_stocks()
-        print(f"users len {len(users)}")
         # Take the user list, stock list, and create a truth matrix of all favorited stocks
         truth_matrix = build_truth_matrix(users, stocks)
 
@@ -162,7 +160,6 @@ def train_new_matrices(
         return user_weights, stock_weights
 
 def recommend_stocks(username, user_weight_path, stock_weight_path):
-    print(user_weight_path)
     user_weights = pd.read_csv(user_weight_path, index_col=0)
     stock_weights = pd.read_csv(stock_weight_path, index_col=0)
 
@@ -170,12 +167,10 @@ def recommend_stocks(username, user_weight_path, stock_weight_path):
     predict = np.dot(user_matrix_np, stock_weights.to_numpy()) # multiple our user weights against stock weights
     predict = pd.DataFrame(predict, index=[username], columns=stock_weights.columns)
     highest_predictions = predict.loc[username,:].nlargest(50)
-    print(f"{username} \n {highest_predictions}")
     user_favorites = get_user_favorites(username)
     recommended_stocks = []
     i = 0
     while len(recommended_stocks) < 12:
-        print(highest_predictions.index[i])
         if not highest_predictions.index[i] in user_favorites:
             recommended_stocks.append(highest_predictions.index[i])
         i += 1
