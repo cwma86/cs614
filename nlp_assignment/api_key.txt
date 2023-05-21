@@ -1,0 +1,3 @@
+# stuff
+site: https://newsapi.org/register/success
+key: 6e4633ea353f41ee806d21ea559001a4
