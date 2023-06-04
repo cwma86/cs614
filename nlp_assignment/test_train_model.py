@@ -9,6 +9,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import tensorflow as tf
+from sklearn.metrics import classification_report
 
 
 def input():
@@ -57,45 +58,33 @@ def main(args):
                 label = np.append(label, label[i])
                 text.append(text[i])
     label_counts = np.unique(label, return_counts=True)
-    print(f"label counts \n\t {label_counts}")
+    print(f"final label counts \n\t {label_counts}")
 
     # Tokenize article text
     tokenizer.fit_on_texts(text)
-    print(f"text[0] {text[2]} {label[2] }")
     text_token = tokenizer.texts_to_sequences(text)
     maxlen=20
     text_token = pad_sequences(text_token, truncating = 'post', padding='post', maxlen=maxlen)
 
     # Combine token and label
-    print(f"text_token {text_token}")
-    print(text_token.shape)
     label = np.array([label]).T
-    print(label.shape)
     labeled_dataset = np.hstack((text_token, label))
-    print(labeled_dataset.shape)
-    print(labeled_dataset[:,-1])
     index = range(labeled_dataset.shape[0])
     
     # add index so we can refrence the data set text after shuffle
     index = np.array([index]).T
-    print(index.shape)
     labeled_dataset = np.hstack((labeled_dataset, index))
-    print(labeled_dataset.shape)
 
     # Shuffle the data to randomize the test/train split
     np.random.shuffle(labeled_dataset)
     training_data_length = math.floor(labeled_dataset.shape[0]* 0.8)
-    print(training_data_length)
     training_data = labeled_dataset[:training_data_length]
     X_train = training_data[:,:-2]
     Y_train = training_data[:,-2]
-    print(f"training_data shape {X_train.shape}, test_data {Y_train.shape}")
     test_data = labeled_dataset[training_data_length:]
     X_test = test_data[:,:-2]
     Y_test = test_data[:,-2]
 
-    # pull data from data base
-    # build test/train dataset
     # build a model
     model = tf.keras.models.Sequential([
     tf.keras.layers.Embedding(number_words,16,input_length=maxlen),
@@ -119,7 +108,9 @@ def main(args):
     )
 
     # output results 
-    model.evaluate(X_test, Y_test)
+    Y_pred = model.predict(X_test)
+    Y_pred = np.argmax(Y_pred, axis=-1)
+    print(classification_report(Y_test, Y_pred, target_names=['negative', 'positive']))
     test = []
     test.append("NVIDIA today reported revenue for the first quarter ended April 30, 2023, of $7.19 billion, down 13\% from a year ago and up 19\% from the...")
     test.append( "GameStop (GME) Gains As Market Dips: What You Should Know") #bad
