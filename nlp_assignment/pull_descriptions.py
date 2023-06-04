@@ -7,7 +7,8 @@ api = NewsApiClient(api_key='6e4633ea353f41ee806d21ea559001a4')
 
 def get_news(querry, page=1):
     final_time = datetime.now()
-    initial_time = final_time - timedelta(days=30)
+    initial_time = final_time - timedelta(days=6)
+    final_time = final_time - timedelta(days=0)
     print(f"final_time: {final_time} initial_time {initial_time}")
     response = api.get_everything(
         q=querry, 
@@ -24,27 +25,46 @@ def get_news(querry, page=1):
 con = sqlite3.connect("news.db")
 cur = con.cursor()
 
+# stock_tickers = [
+#                 "AAPL",
+#                 "AMC",
+#                 "AMD",
+#                 "AMZN",
+#                 "BAC",
+#                 "DIS",
+#                 "GD",
+#                 "GM",
+#                 "FORD",
+#                 "GOOGL",
+#                 "JNJ",
+#                 "JPM",
+#                 "LMT",
+#                 "META",
+#                 "MSFT",
+#                 "NVDA",
+#                 "PLTR",
+#                 "RTX",
+#                 "SNAP",
+#                 "TSLA"
+#                 ]
 stock_tickers = [
-                "AAPL",
-                "AMC",
-                "AMD",
-                "AMZN",
-                "BAC",
-                "DIS",
-                "GD",
-                "GM",
-                "FORD",
-                "GOOGL",
-                "JNJ",
-                "JPM",
-                "LMT",
-                "META",
-                "MSFT",
-                "NVDA",
-                "PLTR",
-                "RTX",
-                "SNAP",
-                "TSLA"
+                "ACB",
+                "AMGN",
+                "ALLT",
+                "ATRI",
+                "BMY",
+                "CARV",
+                "EMKR",
+                "EXPR",
+                "HIBB",
+                "IFF",
+                "IROQ",
+                "KDP",
+                "MBRX",
+                "MOS",
+                "PYPL",
+                "SNBR",
+                "WBA",
                 ]
 
 for stock_ticker in stock_tickers:
@@ -56,8 +76,11 @@ for stock_ticker in stock_tickers:
             '%Y-%m-%dT%H:%M:%SZ'
         )
         title = article['title'].replace('\'', '\'\'')
-        description = article['description'].replace('\'', '\'\'')
-        content = article['content'].replace('\'', '\'\'')
+        try:
+            description = article['description'].replace('\'', '\'\'')
+            content = article['content'].replace('\'', '\'\'')
+        except AttributeError:
+            continue
         command = f"""
         INSERT INTO news VALUES
             (
