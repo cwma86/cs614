@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 MODEL_PATH = "./black_jack_model"
 # Define the Deep Q-Learning agent
 class DQNAgent:
-    def __init__(self, state_size, action_size, batch_size, model=None):
+    def __init__(self, state_size, action_size, batch_size, model=None, verbose=True):
         self.batch_size = batch_size
         self.state_size = state_size
         self.action_size = action_size
@@ -36,8 +36,8 @@ class DQNAgent:
         self.model_path = MODEL_PATH
         if model:
              self.model_path = model
-
-        self.model.summary()
+        if verbose:
+            self.model.summary()
 
     def _build_model(self):
         model = Sequential()
@@ -134,7 +134,7 @@ def main(args):
         # all cards can hold max 4 except tens which hold 16 (number of cards in a single deck)
 
     action_size = 2  # Stay (0) or Hit (1)
-    batch_size = 64 # number of steps to be used for training
+    batch_size = 128 # number of steps to be used for training
     agent = DQNAgent(state_size, action_size, batch_size, model=args.model)
 
     # Train the agent
